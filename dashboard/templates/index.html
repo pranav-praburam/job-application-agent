@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Application Pipeline</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a1a;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    header {
+      background: #fff;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 18px; font-weight: 600; }
+    #refresh-status { color: #888; font-size: 13px; }
+    #last-updated { color: #22c55e; font-weight: 500; }
+
+    main { padding: 24px 32px; max-width: 1280px; margin: 0 auto; }
+
+    /* Stats */
+    .stats { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 16px 24px;
+      min-width: 120px;
+      flex: 1;
+    }
+    .stat-card .label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+    .stat-card.total   .value { color: #374151; }
+    .stat-card.applied .value { color: #3b82f6; }
+    .stat-card.interview .value { color: #f59e0b; }
+    .stat-card.offer   .value { color: #22c55e; }
+    .stat-card.rejected .value { color: #ef4444; }
+
+    /* Table */
+    section h2 {
+      font-size: 13px; font-weight: 600; margin-bottom: 12px;
+      color: #555; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .table-wrap {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: #f8f8f8;
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 12px; font-weight: 600; color: #666;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    td { padding: 11px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafafa; }
+
+    /* Score */
+    .score { font-weight: 600; font-size: 13px; }
+    .score-high { color: #15803d; }
+    .score-mid  { color: #b45309; }
+    .score-low  { color: #9ca3af; }
+
+    /* Status dropdown */
+    .status-select {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 4px 28px 4px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-color: #fff;
+      transition: border-color 0.15s;
+      min-width: 110px;
+    }
+    .status-select:focus { outline: none; border-color: #6366f1; }
+
+    .status-select.s-new       { background-color: #f9fafb; color: #374151; }
+    .status-select.s-applied   { background-color: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .status-select.s-interview { background-color: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .status-select.s-offer     { background-color: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+    .status-select.s-rejected  { background-color: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+    .status-select.s-skipped   { background-color: #f3f4f6; color: #9ca3af; border-color: #e5e7eb; }
+
+    .saving { opacity: 0.5; pointer-events: none; }
+
+    a { color: #3b82f6; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .empty { color: #aaa; font-style: italic; padding: 24px 14px; }
+    .trunc { max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Job Application Pipeline</h1>
+  <div id="refresh-status">Auto-refreshes every 30s &mdash; last updated: <span id="last-updated">—</span></div>
+</header>
+
+<main>
+  <div class="stats">
+    <div class="stat-card total">
+      <div class="label">Jobs Found</div>
+      <div class="value" id="stat-total">—</div>
+    </div>
+    <div class="stat-card applied">
+      <div class="label">Applied</div>
+      <div class="value" id="stat-applied">—</div>
+    </div>
+    <div class="stat-card interview">
+      <div class="label">Interviewing</div>
+      <div class="value" id="stat-interview">—</div>
+    </div>
+    <div class="stat-card offer">
+      <div class="label">Offers</div>
+      <div class="value" id="stat-offer">—</div>
+    </div>
+    <div class="stat-card rejected">
+      <div class="label">Rejected</div>
+      <div class="value" id="stat-rejected">—</div>
+    </div>
+  </div>
+
+  <section>
+    <h2>Jobs Found</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Company</th>
+            <th>Location</th>
+            <th>Match</th>
+            <th>Status</th>
+            <th>Found</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="jobs-body">
+          <tr><td class="empty" colspan="7">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+  const STATUSES = ["new", "applied", "interview", "offer", "rejected", "skipped"];
+
+  function scoreBadge(score) {
+    if (score == null) return '<span class="score score-low">—</span>';
+    const n = Math.round(score);
+    const cls = n >= 75 ? 'score-high' : n >= 50 ? 'score-mid' : 'score-low';
+    return `<span class="score ${cls}">${n}</span>`;
+  }
+
+  function statusSelect(jobId, current) {
+    const opts = STATUSES.map(s =>
+      `<option value="${s}"${s === current ? ' selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`
+    ).join('');
+    return `<select class="status-select s-${current}" data-job-id="${jobId}" onchange="updateStatus(this)">${opts}</select>`;
+  }
+
+  function fmtDate(val) {
+    if (!val) return '—';
+    const d = new Date(val.replace(' ', 'T') + 'Z');
+    return isNaN(d) ? val : d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function esc(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function render(data) {
+    const s = data.stats;
+    const by = s.by_status || {};
+    document.getElementById('stat-total').textContent     = s.total_jobs;
+    document.getElementById('stat-applied').textContent   = by.applied   || 0;
+    document.getElementById('stat-interview').textContent = by.interview  || 0;
+    document.getElementById('stat-offer').textContent     = by.offer      || 0;
+    document.getElementById('stat-rejected').textContent  = by.rejected   || 0;
+
+    const body = document.getElementById('jobs-body');
+    if (!data.jobs.length) {
+      body.innerHTML = '<tr><td class="empty" colspan="7">No jobs found yet. Run the pipeline to populate.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = data.jobs.map(j => `
+      <tr>
+        <td class="trunc">${esc(j.title)}</td>
+        <td>${esc(j.company)}</td>
+        <td>${esc(j.location || '—')}</td>
+        <td>${scoreBadge(j.match_score)}</td>
+        <td>${statusSelect(j.id, j.status || 'new')}</td>
+        <td>${fmtDate(j.found_at)}</td>
+        <td>${j.url ? `<a href="${esc(j.url)}" target="_blank" rel="noopener">View ↗</a>` : '—'}</td>
+      </tr>`).join('');
+
+    document.getElementById('last-updated').textContent =
+      new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  async function updateStatus(select) {
+    const jobId = select.dataset.jobId;
+    const status = select.value;
+    select.classList.add('saving');
+    try {
+      const res = await fetch(`/api/jobs/${jobId}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      // Update colour class without re-rendering the whole table
+      select.className = `status-select s-${status}`;
+    } catch (e) {
+      alert('Failed to update status: ' + e.message);
+      load(); // re-render to revert the dropdown to DB value
+    } finally {
+      select.classList.remove('saving');
+    }
+  }
+
+  async function load() {
+    try {
+      const res = await fetch('/api/data');
+      if (!res.ok) throw new Error(res.status);
+      render(await res.json());
+    } catch {
+      document.getElementById('last-updated').textContent = 'error — retrying';
+    }
+  }
+
+  load();
+  setInterval(load, 30000);
+</script>
+</body>
+</html>

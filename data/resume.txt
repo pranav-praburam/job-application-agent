@@ -1,0 +1,44 @@
+PRANAV VARDHAN — DATA ENGINEER
+pranav.vardhan@gmail.com
+
+SUMMARY
+Data engineer with experience building and maintaining scalable data pipelines, ETL workflows,
+and analytics infrastructure. Comfortable working across the full data stack from ingestion to
+serving, with a strong emphasis on reliability, data quality, and collaboration with analysts and
+data scientists.
+
+SKILLS
+Languages:        Python, SQL, Bash
+Data Engineering: Apache Spark, Apache Airflow, dbt, Kafka, Flink
+Databases:        PostgreSQL, BigQuery, Snowflake, Redshift, SQLite, DynamoDB
+Cloud:            AWS (S3, Glue, Lambda, EMR, Athena), GCP (Dataflow, Pub/Sub, Cloud Storage)
+Orchestration:    Airflow, Prefect, Dagster
+Streaming:        Kafka, Kinesis, Flink
+Tooling:          Docker, Kubernetes, Terraform, Git, GitHub Actions, dbt, Great Expectations
+Monitoring:       Datadog, Grafana, CloudWatch
+
+EXPERIENCE
+
+Senior Data Engineer — Acme Analytics (2022 – present)
+- Designed and maintained ELT pipelines processing 5 TB/day using Spark on EMR and dbt on Snowflake
+- Built real-time streaming pipeline with Kafka and Flink to power product recommendation features
+- Reduced pipeline failure rate by 40% by introducing Great Expectations data quality checks
+- Partnered with ML team to productionise feature store backed by DynamoDB and Redis
+- Led migration from cron-based scripts to Airflow, improving observability and on-call experience
+
+Data Engineer — DataCo (2020 – 2022)
+- Built ingestion pipelines from 20+ third-party APIs into a centralised PostgreSQL data warehouse
+- Wrote dbt models for finance and marketing analytics dashboards in Looker
+- Automated infrastructure provisioning with Terraform; cut environment setup time from days to hours
+- Maintained CI/CD pipelines using GitHub Actions for data model testing and deployment
+
+Data Analyst (contract) — FinTech Startup (2019 – 2020)
+- Developed SQL-based reporting layer on top of BigQuery for executive dashboards
+- Wrote Python scripts to automate weekly data pulls and email reports
+
+EDUCATION
+B.S. Computer Science — State University, 2019
+
+PROJECTS
+- Open-source Airflow plugin for Slack alerting on task failures (200+ GitHub stars)
+- Personal job application pipeline agent using CrewAI, Python, SQLite

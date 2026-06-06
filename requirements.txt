@@ -1,3 +1,4 @@
-crewai>=0.80.0
-crewai-tools>=0.17.0
-python-dotenv>=1.0.0
+crewai[anthropic]==1.14.6
+crewai-tools==1.14.6
+python-dotenv==1.2.2
+flask>=3.0.0
